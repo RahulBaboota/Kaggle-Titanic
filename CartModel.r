@@ -1,7 +1,7 @@
 # -----------------------------------------------------------------------------------------------------------------------------
 
 
-## Baseline Model For predicting the survivors on Titanic RMS
+## CART Model For predicting the survivors on Titanic RMS
 
 # -----------------------------------------------------------------------------------------------------------------------------
 
@@ -29,22 +29,35 @@ Test$Sex = as.factor(Test$Sex)
 Train$Embarked = as.factor(Train$Embarked)
 Test$Embarked = as.factor(Test$Embarked)
 
+## Converting the required strings to strings format
+
+Train$Name = as.character(Train$Name)
+Test$Name = as.character(Test$Name)
+
+## Converting the required integers into numerical format
+
+Train$Ticket = as.integer(Train$Ticket)
+Test$Ticket = as.integer(Test$Ticket)
+
 # -----------------------------------------------------------------------------------------------------------------------------
 
-## Since this is a classification problem , we will firstly build the most basic baseline model which assumes the most frequent
-## outcome in the training set as the outcome for all of the observations in the testing set .
+## Now , we will use "Decision Trees" to build our model.
 
-## Finding the most frequently occuring output
+library(rpart)
+library(rpart.plot)
 
-table(Train$Survived)
+## In our CART Model , we will use only those features which are not represented of identification information of the passenger 
+## like PassengerName , PassengerId etc .
 
-## Looking at this we see that the most of the people in the training set did not survive. So in our baseline model , we will
-## assume that everyone in our test set will also die .
+CartModel = rpart( Survived ~ Pclass + Sex + Age + SibSp + Parch + Fare + Embarked , data = Train , method = "class" )
+prp(CartModel)
 
-Test$Survived = rep(0,418)
-KaggleSubmit1 = data.frame( PassengerId = Test$PassengerId , Survived = Test$Survived )
-write.csv( KaggleSubmit1 , file = "BaselineModel.csv", row.names = FALSE)
+## Now , we will use this model to make predictions on our Testing data set .
 
-## Since , this is very rough model , it does not have a very high accuracy .
+Predictions = predict( CartModel , newdata = Test , type = "class" )
+submit = data.frame(PassengerId = Test$PassengerId, Survived = Prediction)
+write.csv(submit, file = "CartModel.csv", row.names = FALSE)
+
+## This model has quite improved accuracy .
 
 # -----------------------------------------------------------------------------------------------------------------------------
